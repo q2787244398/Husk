@@ -1,0 +1,61 @@
+# Keeps this fork level with Leviidev/Husk, once a day.
+#
+# This fork's only changes are additive -- the English and Simplified Chinese
+# .lproj strings, the workflows, and the localization wiring inside the
+# checked-in Xcode project. A merge from upstream therefore never needs to win a
+# content conflict: anything that clashes is upstream's, and the localization
+# wiring is restored afterwards by scripts/husk_localization.py.
+#
+# The push uses SYNC_TOKEN (a fine-grained PAT with contents:write on this
+# repository) rather than GITHUB_TOKEN, because a push made with GITHUB_TOKEN
+# does not trigger the Build IPA workflow. With the PAT the synced commit is
+# built and a fresh IPA is produced from it, which is the point of syncing.
+name: Sync upstream
+
+on:
+  schedule:
+    # 04:00 Asia/Shanghai. GitHub's scheduler can run late under load.
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Merge upstream/main
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/Leviidev/Husk.git
+          git fetch --no-tags upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "already level with upstream"
+            exit 0
+          fi
+          git merge --no-edit -X theirs upstream/main
+
+      - name: Re-apply localization wiring
+        run: python3 scripts/husk_localization.py
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            git add -A
+            git commit -m "Sync upstream/main and re-apply the localization wiring"
+          fi
+          git push origin HEAD:main

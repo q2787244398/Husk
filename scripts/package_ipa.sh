@@ -143,6 +143,20 @@ for f in "$APP/PlugIns/HuskJITHelper.appex/HuskJITHelper" \
     fi
 done
 
+# The Simplified Chinese localization, and the English one beside it. Both are
+# hand-maintained variant groups in the checked-in project, so a regenerated or
+# merged project can drop them without the build noticing -- the app would then
+# install and run in English for everyone. Fail instead.
+for f in en.lproj/Localizable.strings zh-Hans.lproj/Localizable.strings \
+         en.lproj/InfoPlist.strings zh-Hans.lproj/InfoPlist.strings; do
+    if [ ! -f "$APP/$f" ]; then
+        echo "  MISSING  $f" >&2
+        rc=1
+    else
+        printf "  ok       %-28s %s\n" "$(basename "$f")" "$f"
+    fi
+done
+
 [ $rc -eq 0 ] || { echo "==> bundle is not installable; refusing to package" >&2; exit 1; }
 
 echo "==> packaging"
