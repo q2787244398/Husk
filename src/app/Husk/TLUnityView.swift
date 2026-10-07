@@ -377,7 +377,7 @@ final class TLUnityModel: ObservableObject {
 
     var subStatusText: String {
         switch state {
-        case Int32(HUSK_UNITY_RUNNING): return "\(frames) frame(s) drawn · native runtime"
+        case Int32(HUSK_UNITY_RUNNING): return "\(Int(frames)) frame(s) drawn · native runtime"
         case Int32(HUSK_UNITY_STARTING): return "Loading libraries and starting the engine"
         default: return "Native runtime"
         }
