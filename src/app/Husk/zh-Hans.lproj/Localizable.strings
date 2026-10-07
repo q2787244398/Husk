@@ -26,6 +26,8 @@
 "Add APK" = "添加 APK";
 "Add App" = "添加应用";
 "Add Source" = "添加源";
+"Adding %@…" = "正在添加 %@…";
+"Adding %lld APKs…" = "正在添加 %lld 个 APK…";
 "Adds a sound device. Android cannot be saved while this is on, so every launch boots from cold." = "会添加一个声音设备。开启期间无法保存 Android，因此每次启动都是冷启动。";
 "Adds a sound device. While it is attached Android cannot be saved — QEMU refuses to snapshot a machine with one — so every launch boots from cold. Turning it on or off costs a cold boot either way." = "会添加一个声音设备。挂载期间 Android 无法保存——QEMU 拒绝为带有声音设备的机器生成快照——因此每次启动都是冷启动。无论开启还是关闭，都需要一次冷启动。";
 "Adds about 2 GB to the first download. It was captured on the software renderer, so it is not used on GPU — which cold-boots once and then saves its own." = "首次下载会增加约 2 GB。该快照是在软件渲染器上抓取的，因此 GPU 模式不会使用——GPU 会先冷启动一次，然后自行保存。";

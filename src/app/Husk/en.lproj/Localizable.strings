@@ -26,6 +26,8 @@
 "Add APK" = "Add APK";
 "Add App" = "Add App";
 "Add Source" = "Add Source";
+"Adding %@…" = "Adding %@…";
+"Adding %lld APKs…" = "Adding %lld APKs…";
 "Adds a sound device. Android cannot be saved while this is on, so every launch boots from cold." = "Adds a sound device. Android cannot be saved while this is on, so every launch boots from cold.";
 "Adds a sound device. While it is attached Android cannot be saved — QEMU refuses to snapshot a machine with one — so every launch boots from cold. Turning it on or off costs a cold boot either way." = "Adds a sound device. While it is attached Android cannot be saved — QEMU refuses to snapshot a machine with one — so every launch boots from cold. Turning it on or off costs a cold boot either way.";
 "Adds about 2 GB to the first download. It was captured on the software renderer, so it is not used on GPU — which cold-boots once and then saves its own." = "Adds about 2 GB to the first download. It was captured on the software renderer, so it is not used on GPU — which cold-boots once and then saves its own.";

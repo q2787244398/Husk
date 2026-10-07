@@ -16,7 +16,20 @@ enum HuskFilePicker {
     static func present(types: [UTType] = [.item], multiple: Bool = true,
                         onPick: @escaping ([URL]) -> Void, onFail: ((String) -> Void)? = nil) {
         guard live == nil else { return }
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: false)
+        // asCopy: true, deliberately, and it is not about wanting a copy.
+        //
+        // asCopy: false hands back a security-scoped URL for a file that still
+        // belongs to whichever provider it came from, so iOS has to issue this
+        // app a sandbox extension for it before it can be read. An install iOS
+        // did not sign -- which is every TrollStore one -- cannot be given that
+        // extension, and the failure carries no error to report: the picker's
+        // Open button does nothing, the picker never dismisses, and no delegate
+        // call ever arrives. That is the whole of "I picked the APK and nothing
+        // happened". Asking for a copy has the picker put the file inside Husk's
+        // own container first, where nothing needs to be extended to us; it is
+        // also what makes a file that lives in iCloud work, because the copy is
+        // what fetches it.
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
         picker.allowsMultipleSelection = multiple
         let coordinator = Coordinator(onPick: onPick)
         picker.delegate = coordinator
@@ -27,7 +40,10 @@ enum HuskFilePicker {
             return
         }
         HuskLog.log("ui", "file picker: presenting from \(type(of: top))")
-        top.present(picker, animated: true)
+        // On the next turn of the run loop, not inside the view update that asked
+        // for it: a picker raised while its presenter is still settling comes up
+        // and then never completes, which looks identical to the failure above.
+        Task { @MainActor in top.present(picker, animated: true) }
     }
 
     private static func topController() -> UIViewController? {
