@@ -1,13 +1,18 @@
 #!/bin/bash
 # Build Husk and package one IPA for every installer, validating the bundle before shipping it.
 #
-# No signing team is needed: AltStore / SideStore re-sign at install with the
-# user's own profile. The IPA is signed ad hoc with Husk.entitlements embedded
-# anyway, because TrollStore keeps the entitlements a binary already carries
-# (RootHelper's signApp reads them from the binary) and invents only
-# get-task-allow for one that has none. Signed this way, the same file gets the
-# memory and dynamic-codesigning entitlements under TrollStore, and a sideloader
-# simply replaces the signature.
+# Unsigned, deliberately -- the same artifact the official release ships. Every
+# installer (TrollStore, AltStore, SideStore, Sideloadly) signs at install with
+# its own method, and none of them wants a signature to already be there.
+#
+# The ad hoc signature this used to apply is what made the app die on its first
+# launch. It carried Husk.entitlements, and the memory and
+# dynamic-codesigning entitlements in it are not ones a sideloading profile
+# grants: an installer that keeps them produces an app whose entitlements do not
+# match the profile it was signed with, and iOS kills that app the moment it is
+# opened -- an immediate crash that no log inside the app can explain, because
+# the app never gets to run. Shipping unsigned leaves the entitlements to
+# whoever installs it, which is the one choice that works for all of them.
 #
 # The validation step exists because a bundle missing CFBundleIdentifier or
 # CFBundleExecutable builds and zips perfectly happily, and then fails to install
@@ -163,19 +168,32 @@ echo "==> packaging"
 STAGE="$(mktemp -d)"
 mkdir -p "$STAGE/Payload"
 cp -R "$APP" "$STAGE/Payload/"
-
-# Ad hoc, inside out: loose dylibs and frameworks, then app extensions, then the
-# app with its entitlements (see the top of this file for why).
-ENT="$HUSK_ROOT/src/app/Husk/Husk.entitlements"
 SAPP="$STAGE/Payload/$(basename "$APP")"
-sign() { codesign --force --sign - --timestamp=none "$@"; }
-find "$SAPP" -name "*.dylib" -not -path "*/Frameworks/*.framework/*" | while read -r f; do sign "$f"; done
-for fw in "$SAPP"/Frameworks/*.framework; do [ -d "$fw" ] && sign "$fw"; done
-for ex in "$SAPP"/PlugIns/*.appex; do [ -d "$ex" ] && sign "$ex"; done
-sign --entitlements "$ENT" "$SAPP"
-echo "==> entitlements in the signed app:"
-codesign -d --entitlements - "$SAPP" 2>/dev/null | grep -E "get-task-allow|dynamic-codesigning|increased-memory|extended-virtual" \
-    || { echo "==> entitlements did not embed; refusing to package" >&2; rm -rf "$STAGE"; exit 1; }
+
+# Ship it unsigned (see the top of this file). The build already ran with
+# CODE_SIGNING_ALLOWED=NO, so there should be nothing to strip -- but check, and
+# refuse to package if a signature is there anyway. A signature in the bundle is
+# the difference between an IPA an installer re-signs cleanly and one that
+# crashes the moment it is opened, and that failure looks nothing like a
+# packaging error.
+signed=0
+while IFS= read -r f; do
+    if codesign -d "$f" >/dev/null 2>&1; then
+        echo "  SIGNED   ${f#$SAPP/}  <-- the IPA must ship unsigned" >&2
+        signed=1
+    fi
+done < <(find "$SAPP" -type f \( -perm -u+x -o -name '*.dylib' \) 2>/dev/null)
+if find "$SAPP" \( -name _CodeSignature -o -name embedded.mobileprovision \) -print -quit | grep -q .; then
+    echo "  SIGNED   _CodeSignature / embedded.mobileprovision  <-- the IPA must ship unsigned" >&2
+    signed=1
+fi
+if [ $signed -ne 0 ]; then
+    echo "==> bundle carries a signature; refusing to package" >&2
+    rm -rf "$STAGE"
+    exit 1
+fi
+echo "  ok       bundle is unsigned"
+
 TMP_IPA="$STAGE/Husk.ipa"
 ( cd "$STAGE" && zip -qry "$TMP_IPA" Payload )
 
