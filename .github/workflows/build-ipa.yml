@@ -105,13 +105,16 @@ jobs:
       # PyYAML for the python3 the cross files name (build_ios.sh writes
       # `command -v python3` into them): virglrenderer's gallium code generator
       # imports yaml, and a fresh runner does not have it.
+      # qemu-img is a host tool the app's pre-build phase needs: it creates the
+      # tiny sparse qcow2 firmware and userdata seeds the app copies out on
+      # first launch. Homebrew ships it inside the qemu formula.
       - name: Host tools
         run: |
-          brew install meson ninja
+          brew install meson ninja qemu
           command -v pkg-config >/dev/null || brew install pkgconf
           python3 -m pip install --quiet --break-system-packages pyyaml
           python3 -c 'import yaml; print("PyYAML", yaml.__version__, "for", __import__("sys").executable)'
-          meson --version; ninja --version; pkg-config --version
+          meson --version; ninja --version; pkg-config --version; qemu-img --version | head -1
 
       - name: Cache keys
         id: keys
@@ -244,6 +247,33 @@ jobs:
 
       - name: Fetch guest kernel
         run: scripts/fetch_phase0_guest.sh
+
+      # libhusk_rppairing.a is the on-device pairing helper for Built-in StikJIT
+      # (src/rppairing-ios, Rust), which the app target links with
+      # -lhusk_rppairing from build/ios-arm64/lib. It shares no inputs with QEMU,
+      # so it gets its own cache, keyed on the crate's own locked dependency set.
+      # The runner ships rustup; only the iOS target it does not have by default.
+      - name: Add the Rust iOS target
+        run: rustup target add aarch64-apple-ios
+
+      - name: Restore rppairing
+        id: rppairing
+        if: ${{ !inputs.rebuild }}
+        uses: actions/cache/restore@v4
+        with:
+          key: rppairing-v1-${{ hashFiles('src/rppairing-ios/Cargo.lock') }}
+          path: build/ios-arm64/lib/libhusk_rppairing.a
+
+      - name: Build rppairing
+        if: steps.rppairing.outputs.cache-hit != 'true'
+        run: scripts/build_rppairing_ios.sh
+
+      - name: Save rppairing
+        if: steps.rppairing.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          key: rppairing-v1-${{ hashFiles('src/rppairing-ios/Cargo.lock') }}
+          path: build/ios-arm64/lib/libhusk_rppairing.a
 
       # The checked-in project, not a regenerated one: xcodegen is deliberately
       # not installed, so package_ipa.sh uses it as-is. That also means the
