@@ -161,18 +161,19 @@ struct TLAppSettingsView: View {
 
             Section {
                 Picker("Orientation", selection: $settings.orientation) {
-                    ForEach(TLAppSettings.Orientation.allCases) { Text($0.title).tag($0) }
+                    ForEach(TLAppSettings.Orientation.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                 }
                 Picker("Resolution", selection: $settings.resolution) {
-                    ForEach(TLAppSettings.Resolution.allCases) { Text($0.title).tag($0) }
+                    ForEach(TLAppSettings.Resolution.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                 }
                 Toggle("Performance readout", isOn: $settings.showStats)
                 Toggle("Keep the screen on", isOn: $settings.keepAwake)
             } header: {
                 Text("Display")
             } footer: {
-                Text("\(settings.resolution.detail) Orientation and resolution apply the next time the game starts, and a game already "
-                   + "running in this session needs Husk closed and opened again.")
+                Text(LocalizedStringKey(settings.resolution.detail))
+                + Text(" ")
+                + Text("Orientation and resolution apply the next time the game starts, and a game already running in this session needs Husk closed and opened again.")
             }
 
             Section {
@@ -180,14 +181,14 @@ struct TLAppSettingsView: View {
             } header: {
                 Text("Screenshots")
             } footer: {
-                Text("The game starts with nothing over it: no bar, no controller, no readout, the picture to every edge. Tap with three "
+                Text(LocalizedStringKey("The game starts with nothing over it: no bar, no controller, no readout, the picture to every edge. Tap with three "
                    + "fingers at once to bring the bar back, and again to hide it. The Hide button in the bar does the same while "
-                   + "playing, but leaves the strip the bar sat in.")
+                   + "playing, but leaves the strip the bar sat in."))
             }
 
             Section {
                 Picker("On-screen controller", selection: $settings.pad) {
-                    ForEach(TLAppSettings.PadMode.allCases) { Text($0.title).tag($0) }
+                    ForEach(TLAppSettings.PadMode.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                 }
                 if settings.pad != .never {
                     VStack(alignment: .leading, spacing: 6) {
@@ -199,8 +200,8 @@ struct TLAppSettingsView: View {
             } header: {
                 Text("Controller")
             } footer: {
-                Text("Automatic offers the controller for games that cannot be played without one (Unreal Engine games), when no real "
-                   + "controller is connected. Always offers it for any game that understands one. A paired controller is always used.")
+                Text(LocalizedStringKey("Automatic offers the controller for games that cannot be played without one (Unreal Engine games), when no real "
+                   + "controller is connected. Always offers it for any game that understands one. A paired controller is always used."))
             }
 
             Section {
@@ -212,8 +213,8 @@ struct TLAppSettingsView: View {
             } header: {
                 Text("Data")
             } footer: {
-                Text(inUse ? "The game is loaded in this session. Close Husk completely and open it again to reset its data."
-                           : "Deletes what the game saved and downloaded here: saves, settings and caches. The game itself stays.")
+                Text(LocalizedStringKey(inUse ? "The game is loaded in this session. Close Husk completely and open it again to reset its data."
+                           : "Deletes what the game saved and downloaded here: saves, settings and caches. The game itself stays."))
             }
         }
         .huskForm()

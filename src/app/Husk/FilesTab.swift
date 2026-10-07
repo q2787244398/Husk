@@ -60,7 +60,8 @@ struct DirectoryView: View {
             if loading && entries.isEmpty {
                 ProgressView()
             } else if let failure {
-                EmptyState(title: "Cannot Read This Folder", message: failure, systemImage: "lock")
+                EmptyState(title: "Cannot Read This Folder", message: LocalizedStringKey(failure),
+                           systemImage: "lock")
             } else if entries.isEmpty {
                 EmptyState(title: "Empty", message: "Nothing is in this folder yet.",
                            systemImage: "folder", actionTitle: "Import Files",
@@ -127,7 +128,7 @@ struct DirectoryView: View {
                 .foregroundStyle(tint)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).lineLimit(1).truncationMode(.middle)
+                Text(LocalizedStringKey(title)).lineLimit(1).truncationMode(.middle)
                 if let subtitle {
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }

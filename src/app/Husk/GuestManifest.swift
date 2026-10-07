@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import CryptoKit
+import SwiftUI
 
 /// What the release says the guest should be, and whether what is installed
 /// matches it.
@@ -112,7 +113,7 @@ enum GuestUpdate: Equatable {
 
     var isSomething: Bool { self != .none }
 
-    var title: String {
+    var title: LocalizedStringKey {
         switch self {
         case .none:     return ""
         case .image:    return "A new Android image is available"
@@ -120,7 +121,7 @@ enum GuestUpdate: Equatable {
         }
     }
 
-    var detail: String {
+    var detail: LocalizedStringKey {
         let bytes: Int64
         switch self {
         case .none:              return ""
@@ -131,14 +132,9 @@ enum GuestUpdate: Equatable {
         let size = String(format: "%.1f GB", gb)
         switch self {
         case .image:
-            return "Downloading it replaces the Android system and its pre-booted "
-                 + "snapshot (\(size)), and with them everything inside Android — "
-                 + "installed apps included. A snapshot only restores against the "
-                 + "image it was saved on, so the two cannot be updated separately."
+            return "Downloading it replaces the Android system and its pre-booted snapshot (\(size)), and with them everything inside Android — installed apps included. A snapshot only restores against the image it was saved on, so the two cannot be updated separately."
         case .snapshot:
-            return "Without it Android boots from cold, which takes several "
-                 + "minutes. The download is \(size), and it replaces what is "
-                 + "inside Android now, including installed apps."
+            return "Without it Android boots from cold, which takes several minutes. The download is \(size), and it replaces what is inside Android now, including installed apps."
         case .none:
             return ""
         }

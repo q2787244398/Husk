@@ -415,10 +415,10 @@ struct TLUnityAttemptView: View {
             VStack(spacing: 0) {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(model.statusText)
+                        Text(LocalizedStringKey(model.statusText))
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(model.statusColor)
-                        Text(model.subStatusText)
+                        Text(LocalizedStringKey(model.subStatusText))
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.textDim)
                     }
@@ -662,25 +662,25 @@ struct TLCocosAttemptView: View {
             }
             .tint(.white)
             Circle().fill(model.statusColor).frame(width: 7, height: 7)
-            Text(model.state == Int32(HUSK_UNITY_RUNNING) ? app.label : model.statusText)
+            Text(LocalizedStringKey(model.state == Int32(HUSK_UNITY_RUNNING) ? app.label : model.statusText))
                 .font(.system(size: 12, weight: .medium)).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
             Spacer()
             if !pads.names.isEmpty {
-                Label(pads.names.count == 1 ? pads.names[0] : "\(pads.names.count) controllers", systemImage: "gamecontroller.fill")
+                Label(pads.names.count == 1 ? LocalizedStringKey(pads.names[0]) : "\(pads.names.count) controllers", systemImage: "gamecontroller.fill")
                     .font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
             }
             if padOffered {
                 Button { settings.padShown.toggle(); settings.save(app.id) } label: {
-                    Label(settings.padShown ? "Hide pad" : "Pad", systemImage: "gamecontroller").font(.system(size: 12, weight: .semibold))
+                    Label(LocalizedStringKey(settings.padShown ? "Hide pad" : "Pad"), systemImage: "gamecontroller").font(.system(size: 12, weight: .semibold))
                 }
                 .tint(.white)
             }
             if settings.showStats, model.state == Int32(HUSK_UNITY_RUNNING) {
-                Text(stats).font(.technical(11)).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
+                Text(LocalizedStringKey(stats)).font(.technical(11)).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
             }
             if devInfo {
                 Button { withAnimation(.snappy(duration: 0.25)) { showLog.toggle() } } label: {
-                    Text(showLog ? "Hide log" : "Log").font(.system(size: 12, weight: .semibold))
+                    Text(LocalizedStringKey(showLog ? "Hide log" : "Log")).font(.system(size: 12, weight: .semibold))
                 }
                 .tint(.white)
             }

@@ -70,13 +70,13 @@ struct JITSetupFlow: View {
             VStack(spacing: 10) {
                 let builtIn = HuskBuiltInJIT.unavailableReason
                 way("Pair on this \(device)", symbol: "iphone.radiowaves.left.and.right",
-                    detail: builtIn ?? (!OnDevicePairing.isSupported ? "Needs iOS 27 or later."
+                    detail: builtIn.map { LocalizedStringKey($0) } ?? (!OnDevicePairing.isSupported ? "Needs iOS 27 or later."
                         : jit.pairingSource == .onDevice ? "Paired on this \(device)."
                         : "No computer needed. Pairs from Settings in a minute."),
                     done: jit.pairingSource == .onDevice,
                     enabled: builtIn == nil && OnDevicePairing.isSupported) { path.append(.pairOnDevice) }
                 way("Use a pairing file", symbol: "doc.badge.plus",
-                    detail: builtIn ?? (jit.pairingSource == .imported ? "Pairing file imported."
+                    detail: builtIn.map { LocalizedStringKey($0) } ?? (jit.pairingSource == .imported ? "Pairing file imported."
                         : "Import a pairing file made on a computer."),
                     done: jit.pairingSource == .imported,
                     enabled: builtIn == nil) { path.append(.importFile) }
@@ -108,7 +108,7 @@ struct JITSetupFlow: View {
         }
     }
 
-    private func way(_ title: String, symbol: String, detail: String, done: Bool,
+    private func way(_ title: LocalizedStringKey, symbol: String, detail: LocalizedStringKey, done: Bool,
                      enabled: Bool = true, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
@@ -195,8 +195,8 @@ struct JITSetupFlow: View {
                 }
                 .font(.system(size: 14, weight: .semibold))
                 if pairing.backgroundLimited {
-                    Text("This installation can only wait about 30 seconds in the background, "
-                       + "so go to Settings straight away.")
+                    Text(LocalizedStringKey("This installation can only wait about 30 seconds in the background, "
+                       + "so go to Settings straight away."))
                         .font(.system(size: 13)).foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -217,7 +217,7 @@ struct JITSetupFlow: View {
         case .paired(let name):
             outcome("Paired with \(name)", ok: true)
         case .failed(let message):
-            outcome(message, ok: false)
+            outcome(LocalizedStringKey(message), ok: false)
         }
     }
 
@@ -238,7 +238,7 @@ struct JITSetupFlow: View {
             Label("The pairing file stays in Husk's Documents folder and is only sent to Husk's own helper.",
                   systemImage: "lock.fill")
                 .font(.system(size: 13)).foregroundStyle(Theme.textDim)
-            if let error = jit.error { outcome(error, ok: false) }
+            if let error = jit.error { outcome(LocalizedStringKey(error), ok: false) }
         } actions: {
             if jit.pairingSource == .imported {
                 Button("Continue") { path.append(.connect) }.buttonStyle(PrimaryButtonStyle())
@@ -290,7 +290,7 @@ struct JITSetupFlow: View {
             if jit.busy {
                 HStack(spacing: 11) {
                     ProgressView().tint(Theme.accent)
-                    Text(jit.status ?? "Working…").font(.system(size: 14)).foregroundStyle(Theme.text)
+                    Text(LocalizedStringKey(jit.status ?? "Working…")).font(.system(size: 14)).foregroundStyle(Theme.text)
                     Spacer(minLength: 0)
                 }
                 .padding(16).huskCard(high: true)
@@ -298,9 +298,9 @@ struct JITSetupFlow: View {
                 outcome("JIT is on. Android can start.", ok: true)
             } else if let error = jit.error {
                 VStack(alignment: .leading, spacing: 10) {
-                    outcome(error, ok: false)
+                    outcome(LocalizedStringKey(error), ok: false)
                     if jit.connectionProblem == .pairing {
-                        Button(OnDevicePairing.isSupported ? "Pair again" : "Import a new pairing file") {
+                        Button(LocalizedStringKey(OnDevicePairing.isSupported ? "Pair again" : "Import a new pairing file")) {
                             path = [OnDevicePairing.isSupported ? .pairOnDevice : .importFile]
                         }
                         .font(.system(size: 14, weight: .semibold))
@@ -311,7 +311,7 @@ struct JITSetupFlow: View {
                     }
                 }
             } else if let status = jit.status {
-                outcome(status, ok: true)
+                outcome(LocalizedStringKey(status), ok: true)
             }
 
             if !attached {
@@ -424,7 +424,7 @@ struct JITSetupFlow: View {
     // MARK: Pieces
 
     private func page<Content: View, Actions: View>(
-        symbol: String, title: String, subtitle: String,
+        symbol: String, title: LocalizedStringKey, subtitle: LocalizedStringKey,
         @ViewBuilder content: () -> Content,
         @ViewBuilder actions: () -> Actions) -> some View {
         ZStack {
@@ -457,7 +457,7 @@ struct JITSetupFlow: View {
         }
     }
 
-    private func point(_ number: Int, _ text: String, done: Bool = false) -> some View {
+    private func point(_ number: Int, _ text: LocalizedStringKey, done: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle().fill(done ? Color.green.opacity(0.18) : Theme.accentSoft)
@@ -468,7 +468,7 @@ struct JITSetupFlow: View {
                 }
             }
             .frame(width: 26, height: 26)
-            Text(.init(text))
+            Text(text)
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.text)
                 .fixedSize(horizontal: false, vertical: true)
@@ -476,7 +476,7 @@ struct JITSetupFlow: View {
         }
     }
 
-    private func outcome(_ text: String, ok: Bool) -> some View {
+    private func outcome(_ text: LocalizedStringKey, ok: Bool) -> some View {
         Label(text, systemImage: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
             .font(.system(size: 14, weight: .medium))
             .foregroundStyle(ok ? .green : .red)

@@ -315,7 +315,7 @@ struct GuestScreenView: View {
                     ProgressView(value: Double(runner.bootProgress), total: 100)
                         .progressViewStyle(.linear)
                         .frame(width: 200)
-                    Text(runner.setupMessage ?? "Starting Android…")
+                    Text(LocalizedStringKey(runner.setupMessage ?? "Starting Android…"))
                         .font(.caption2).foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -383,14 +383,14 @@ struct GuestScreenView: View {
                                 HuskGLView.rotated.toggle()
                                 rotated = HuskGLView.rotated
                             } label: {
-                                Label(rotated ? "Unrotate picture" : "Rotate picture",
+                                Label(LocalizedStringKey(rotated ? "Unrotate picture" : "Rotate picture"),
                                       systemImage: "rotate.right")
                             }
                             Divider()
                             Button {
                                 QemuRunner.shared.saveState(reason: "asked from full screen")
                             } label: {
-                                Label(runner.isSavingState ? "Saving…" : "Save Android",
+                                Label(LocalizedStringKey(runner.isSavingState ? "Saving…" : "Save Android"),
                                       systemImage: "externaldrive.badge.checkmark")
                             }
                             .disabled(runner.isSavingState)
@@ -499,7 +499,7 @@ struct SetupView: View {
                 } else {
                     ProgressView()
                 }
-                Text(runner.setupMessage.map { "Android: \($0)" } ?? "Starting Android…")
+                Text(LocalizedStringKey(runner.setupMessage.map { "Android: \($0)" } ?? "Starting Android…"))
                     .font(.callout).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center).padding(.horizontal, 36)
                 Text("First run downloads Android and can take several minutes.")
@@ -510,9 +510,9 @@ struct SetupView: View {
             switch guest.state {
             case .downloading(let p, let received, let total):
                 VStack(spacing: 10) {
-                    Text(guest.hasShippedSnapshot || GuestImage.shared.isFetchingSnapshot
+                    Text(LocalizedStringKey(guest.hasShippedSnapshot || GuestImage.shared.isFetchingSnapshot
                          ? "Downloading pre-booted Android"
-                         : "Downloading Android runtime").font(.headline)
+                         : "Downloading Android runtime")).font(.headline)
                     ProgressView(value: p).padding(.horizontal, 50)
                     Text("\(fmt(received)) of \(total > 0 ? fmt(total) : "…")")
                         .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
@@ -730,8 +730,8 @@ struct ControlsSheet: View {
                     row("computermouse", "Mouse", on: false, available: false)
                 }
 
-                Text("Touch always works. A gamepad and a pointer are not wired "
-                   + "through to Android yet.")
+                Text(LocalizedStringKey("Touch always works. A gamepad and a pointer are not wired "
+                   + "through to Android yet."))
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textDim)
                     .multilineTextAlignment(.center)
@@ -752,7 +752,7 @@ struct ControlsSheet: View {
                 .frame(width: 34, height: 34)
                 .background(Theme.surfaceHigh,
                             in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(available ? Theme.text : Theme.textDim.opacity(0.6))
             Spacer()

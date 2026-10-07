@@ -192,7 +192,7 @@ struct Chip: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(selected ? .white : Theme.textDim)
                 .padding(.horizontal, 16).padding(.vertical, 8)
@@ -208,7 +208,7 @@ struct Tag: View {
     var tint: Color = Theme.textDim
 
     var body: some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(tint)
             .padding(.horizontal, 10).padding(.vertical, 4)
@@ -224,9 +224,9 @@ struct DetailRow: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(label).foregroundStyle(Theme.textDim)
+            Text(LocalizedStringKey(label)).foregroundStyle(Theme.textDim)
             Spacer(minLength: 16)
-            Text(value)
+            Text(LocalizedStringKey(value))
                 .font(mono ? .technical() : .system(size: 15))
                 .foregroundStyle(Theme.text)
                 .multilineTextAlignment(.trailing)
@@ -254,11 +254,11 @@ struct HuskRow: View {
                 .background(Theme.surfaceHigh,
                             in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(tint)
                 if let subtitle {
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textDim)
                         .lineLimit(1)
@@ -302,7 +302,7 @@ struct SectionHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Theme.text)
             Spacer()
@@ -320,7 +320,7 @@ struct StatusPill: View {
     var tint: Color = Theme.accent
 
     var body: some View {
-        Label(text, systemImage: systemImage)
+        Label(LocalizedStringKey(text), systemImage: systemImage)
             .font(.system(size: 12, weight: .medium))
             .padding(.horizontal, 10).padding(.vertical, 5)
             .background(tint.opacity(0.16), in: Capsule())
@@ -330,10 +330,10 @@ struct StatusPill: View {
 
 /// What a screen shows when it has nothing to show.
 struct EmptyState: View {
-    let title: String
-    let message: String
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
     let systemImage: String
-    var actionTitle: String? = nil
+    var actionTitle: LocalizedStringKey? = nil
     var action: (() -> Void)? = nil
 
     var body: some View {
@@ -352,7 +352,9 @@ struct EmptyState: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 28)
             if let actionTitle, let action {
-                Button(actionTitle, action: action)
+                Button(action: action) {
+                    Text(actionTitle)
+                }
                     .buttonStyle(PrimaryButtonStyle())
                     .padding(.horizontal, 44)
                     .padding(.top, 6)
@@ -386,11 +388,11 @@ struct ToastView: View {
                 .font(.system(size: 19))
                 .foregroundStyle(toast.good ? Theme.good : .orange)
             VStack(alignment: .leading, spacing: 2) {
-                Text(toast.title)
+                Text(LocalizedStringKey(toast.title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.text)
                 if let detail = toast.detail {
-                    Text(detail)
+                    Text(LocalizedStringKey(detail))
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textDim)
                         .lineLimit(2)

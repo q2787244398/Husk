@@ -1462,7 +1462,10 @@ final class AndroidHost: ObservableObject {
     /// route in at all. Same transfer as an install, minus pm.
     func sendFiles(_ files: [URL], to directory: String = "/sdcard/Download") {
         guard !files.isEmpty else { return }
-        busy = "Sending \(files.count == 1 ? files[0].lastPathComponent : "\(files.count) files")…"
+        busy = files.count == 1
+            ? String(format: NSLocalizedString("Sending %@…", comment: ""),
+                     files[0].lastPathComponent)
+            : String(format: NSLocalizedString("Sending %lld files…", comment: ""), files.count)
         Task.detached { [weak self] in
             var sent = 0
             for file in files {
@@ -1489,7 +1492,9 @@ final class AndroidHost: ObservableObject {
                         "mkdir -p \(Self.quote(directory))")
                     try GuestBridge.shared.push(file, to: "'\(remote)'") { p in
                         Task { @MainActor in
-                            self?.busy = "Sending \(name) — \(Int(p * 100))%"
+                            self?.busy = String(
+                                format: NSLocalizedString("Sending %@ — %lld%%", comment: ""),
+                                name, Int(p * 100))
                         }
                     }
                     // Without this the file exists and no app can see it: the
@@ -1501,7 +1506,9 @@ final class AndroidHost: ObservableObject {
                     sent += 1
                 } catch {
                     await MainActor.run {
-                        self?.busy = "Could not send \(name): \(error.localizedDescription)"
+                        self?.busy = String(
+                            format: NSLocalizedString("Could not send %@: %@", comment: ""),
+                            name, error.localizedDescription)
                     }
                     try? await Task.sleep(nanoseconds: 4_000_000_000)
                     await MainActor.run { self?.busy = nil }
@@ -1512,8 +1519,10 @@ final class AndroidHost: ObservableObject {
             let where_ = (directory as NSString).lastPathComponent
             await MainActor.run {
                 self?.busy = nil
-                self?.say(n == 1 ? "File sent" : "\(n) files sent",
-                          "In Android's \(where_) folder.")
+                self?.say(n == 1 ? "File sent"
+                                 : String(format: NSLocalizedString("%lld files sent", comment: ""), n),
+                          String(format: NSLocalizedString("In Android's %@ folder.", comment: ""),
+                                 where_))
             }
         }
     }
@@ -1529,7 +1538,7 @@ final class AndroidHost: ObservableObject {
     /// it from there. This is the path for an APK that arrived through the
     /// Files tab, or that a browser in the guest downloaded itself.
     func installFromGuest(_ path: String, name: String) {
-        busy = "Installing \(name)…"
+        busy = String(format: NSLocalizedString("Installing %@…", comment: ""), name)
         Task.detached { [weak self] in
             let out = (try? GuestBridge.shared.shell(
                 "pm install -r \(AndroidHost.quote(path))", timeout: 900)) ?? ""
@@ -1540,7 +1549,8 @@ final class AndroidHost: ObservableObject {
             await MainActor.run {
                 self?.busy = nil
                 self?.say(ok ? "APK installed" : "Install failed",
-                          ok ? "\(name) is ready to launch."
+                          ok ? String(format: NSLocalizedString("%@ is ready to launch.", comment: ""),
+                                      name)
                              : String(out.prefix(120))
                                  .trimmingCharacters(in: .whitespacesAndNewlines),
                           good: ok)
@@ -1549,7 +1559,7 @@ final class AndroidHost: ObservableObject {
     }
 
     func uninstall(_ package: String) {
-        busy = "Removing \(package)…"
+        busy = String(format: NSLocalizedString("Removing %@…", comment: ""), package)
         Task.detached { [weak self] in
             var out = (try? GuestBridge.shared.shell("pm uninstall \(package)",
                                                      timeout: 300)) ?? ""
@@ -1573,7 +1583,9 @@ final class AndroidHost: ObservableObject {
             await MainActor.run {
                 self?.busy = nil
                 self?.say(ok ? "Uninstalled" : "Could not uninstall",
-                          ok ? "\(label) is gone from Android." : label,
+                          ok ? String(format: NSLocalizedString("%@ is gone from Android.", comment: ""),
+                                      label)
+                             : label,
                           good: ok)
             }
         }
@@ -1595,7 +1607,7 @@ final class AndroidHost: ObservableObject {
         guard let first = apks.first else { return }
         let name = apks.count == 1 ? first.lastPathComponent
                                    : "\(apks.count) APKs (\(first.lastPathComponent))"
-        busy = "Installing \(name)…"
+        busy = String(format: NSLocalizedString("Installing %@…", comment: ""), name)
         Task.detached { [weak self] in
             // /data/local/tmp is the one directory the shell user owns outright,
             // and the one pm will read an APK from.
@@ -1658,7 +1670,7 @@ final class AndroidHost: ObservableObject {
                     expected += size
                 }
 
-                await MainActor.run { self?.busy = "Installing \(name)…" }
+                await MainActor.run { self?.busy = String(format: NSLocalizedString("Installing %@…", comment: ""), name) }
                 // Installing is dex2oat's work and it is emulated, so minutes
                 // rather than seconds for anything large. -t allows test-signed
                 // APKs, which most sideloaded builds are.
@@ -1740,7 +1752,9 @@ final class AndroidHost: ObservableObject {
                 }
             } catch {
                 HuskLog.log("bridge", "install failed: \(error.localizedDescription)")
-                await MainActor.run { self?.busy = "Install failed: \(error.localizedDescription)" }
+                await MainActor.run { self?.busy = String(
+                    format: NSLocalizedString("Install failed: %@", comment: ""),
+                    error.localizedDescription) }
                 Task { try? await Task.sleep(nanoseconds: 5_000_000_000)
                        await MainActor.run { self?.busy = nil } }
             }

@@ -193,8 +193,10 @@ final class TranslationLayerStore: ObservableObject {
     /// picked together -- and report on it.
     func add(_ urls: [URL], move: Bool = false) {
         guard !urls.isEmpty, busy == nil else { return }
-        busy = urls.count == 1 ? "Adding \(urls[0].lastPathComponent)…"
-                               : "Adding \(urls.count) APKs…"
+        busy = urls.count == 1
+            ? String(format: NSLocalizedString("Adding %@…", comment: ""),
+                     urls[0].lastPathComponent)
+            : String(format: NSLocalizedString("Adding %lld APKs…", comment: ""), urls.count)
         Task.detached(priority: .userInitiated) {
             let failure = Self.ingest(urls, move: move)
             await MainActor.run {
@@ -485,9 +487,9 @@ struct TranslationLayerTab: View {
         } header: {
             Text("Apps")
         } footer: {
-            Text("Runs Android games straight on your iPhone, without starting Android. Add an APK, or a bundle "
+            Text(LocalizedStringKey("Runs Android games straight on your iPhone, without starting Android. Add an APK, or a bundle "
                + "(.xapk, .apkm, .apks) — or pick a base APK and its split pieces together. "
-               + "Husk keeps its own copy, apart from Android's.")
+               + "Husk keeps its own copy, apart from Android's."))
         }
     }
 
@@ -510,18 +512,18 @@ struct TranslationLayerTab: View {
             Button {
                 store.runChecks()
             } label: {
-                Label(store.checking ? "Checking…"
-                      : store.checks.isEmpty ? "Run checks" : "Run again",
+                Label(LocalizedStringKey(store.checking ? "Checking…"
+                      : store.checks.isEmpty ? "Run checks" : "Run again"),
                       systemImage: "stethoscope")
             }
             .disabled(store.checking)
         } header: {
             Text("This iPhone")
         } footer: {
-            Text("Android's native code expects things of the processor and of memory "
+            Text(LocalizedStringKey("Android's native code expects things of the processor and of memory "
                + "that only the phone can answer -- above all, whether a library's code "
                + "can run with its data writable right beside it. Enable JIT first, or "
-               + "the memory checks are skipped. The results go to the console too.")
+               + "the memory checks are skipped. The results go to the console too."))
         }
     }
 
@@ -588,7 +590,7 @@ private struct TLAppTile: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, minHeight: 34, alignment: .top)
-            Text(devInfo ? verdict.title : plain.title)
+            Text(LocalizedStringKey(devInfo ? verdict.title : plain.title))
                 .font(.caption2)
                 .foregroundStyle(devInfo ? verdict.tint : plain.tint)
                 .lineLimit(1)
@@ -659,7 +661,7 @@ struct TLAppReportView: View {
                         Text(app.label)
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(Theme.text)
-                        Text(devInfo ? verdict.title : plain.title)
+                        Text(LocalizedStringKey(devInfo ? verdict.title : plain.title))
                             .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(devInfo ? verdict.tint : plain.tint)
                     }
@@ -678,7 +680,7 @@ struct TLAppReportView: View {
                     showAttempt = true
                 } label: {
                     HStack {
-                        Label(devInfo ? "Run Translation Layer Attempt" : "Play", systemImage: "play.circle.fill")
+                        Label(LocalizedStringKey(devInfo ? "Run Translation Layer Attempt" : "Play"), systemImage: "play.circle.fill")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Theme.accent)
                         Spacer()
@@ -694,8 +696,8 @@ struct TLAppReportView: View {
                 }
             } footer: {
                 if devInfo {
-                    Text("Loads arm64 native code into JIT memory on Apple Silicon and drives "
-                       + "a NativeActivity lifecycle. Apps with Java/Dex require ART (milestone 2).")
+                    Text(LocalizedStringKey("Loads arm64 native code into JIT memory on Apple Silicon and drives "
+                       + "a NativeActivity lifecycle. Apps with Java/Dex require ART (milestone 2)."))
                 } else {
                     Text("Turn on JIT first. Close the game with Close at the top.")
                 }
@@ -723,9 +725,9 @@ struct TLAppReportView: View {
                     } header: {
                         Text("Android libraries it needs")
                     } footer: {
-                        Text("Its own libraries link against these, and it does not "
+                        Text(LocalizedStringKey("Its own libraries link against these, and it does not "
                            + "carry them. Each is something the translation layer has "
-                           + "to provide.")
+                           + "to provide."))
                     }
                 }
 
@@ -743,8 +745,8 @@ struct TLAppReportView: View {
                     Label("Remove", systemImage: "trash")
                 }
             } footer: {
-                Text("Deletes Husk's copy of the APKs. Anything installed in Android is "
-                   + "untouched.")
+                Text(LocalizedStringKey("Deletes Husk's copy of the APKs. Anything installed in Android is "
+                   + "untouched."))
             }
         }
         .huskForm()

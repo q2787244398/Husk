@@ -185,6 +185,30 @@ jobs:
             build/ios-arm64/sysroot
             build/stamps
 
+      # MoltenVK is what Vulkan becomes on Apple hardware: the app embeds it and
+      # the native runtime opens it by path when an Unreal game starts. It is
+      # built from source -- the Homebrew one is a Mac binary, no use on a phone
+      # -- and cached on its own, because it shares no inputs with QEMU's
+      # dependencies and so must not force those through a rebuild.
+      - name: Restore MoltenVK
+        id: moltenvk
+        if: ${{ !inputs.rebuild }}
+        uses: actions/cache/restore@v4
+        with:
+          key: moltenvk-v1-${{ hashFiles('scripts/build_moltenvk_ios.sh') }}
+          path: build/ios-arm64/lib/MoltenVK.xcframework
+
+      - name: Build MoltenVK
+        if: steps.moltenvk.outputs.cache-hit != 'true'
+        run: scripts/build_moltenvk_ios.sh
+
+      - name: Save MoltenVK
+        if: steps.moltenvk.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          key: moltenvk-v1-${{ hashFiles('scripts/build_moltenvk_ios.sh') }}
+          path: build/ios-arm64/lib/MoltenVK.xcframework
+
       # UTM's patch first, then Husk's integration: the order a developer's
       # tree gets them in (build_ios.sh patches on its first run), and the
       # order integrate_husk.sh's in-place edits were written against.

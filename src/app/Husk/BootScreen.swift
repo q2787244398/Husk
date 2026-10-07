@@ -66,7 +66,7 @@ struct BootScreen: View {
 
                 // The line that talks. Keyed on the index so each one fades
                 // into the next rather than snapping.
-                Text(Self.phrases[phrase % Self.phrases.count])
+                Text(LocalizedStringKey(Self.phrases[phrase % Self.phrases.count]))
                     .font(.system(size: 15))
                     .foregroundStyle(Theme.textDim)
                     .multilineTextAlignment(.center)
@@ -84,7 +84,7 @@ struct BootScreen: View {
 
                 // What Android itself is doing, small, under everything else.
                 // The phrases pass the time; this is the part that is true.
-                Text(runner.setupMessage ?? host.status)
+                Text(LocalizedStringKey(runner.setupMessage ?? host.status))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textDim.opacity(0.75))
                     .lineLimit(1)
@@ -123,7 +123,7 @@ struct BootScreen: View {
             .frame(height: 5)
 
             HStack {
-                Text(shown > 0 ? "\(shown)%" : "starting")
+                Text(LocalizedStringKey(shown > 0 ? "\(shown)%" : "starting"))
                     .font(.technical(12, weight: .medium))
                     .foregroundStyle(Theme.accent)
                 Spacer()

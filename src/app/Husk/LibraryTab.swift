@@ -113,22 +113,22 @@ struct LibraryTab: View {
                 }
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text(started ? "Starting Android" : "Android Is Not Running")
+                Text(LocalizedStringKey(started ? "Starting Android" : "Android Is Not Running"))
                     .font(.subheadline.weight(.semibold))
                 if started, runner.bootProgress > 0 {
                     ProgressView(value: Double(runner.bootProgress), total: 100)
                 } else {
-                    Text(started ? host.status
+                    Text(LocalizedStringKey(started ? host.status
                                  : JITBootstrap.isDebuggerAttached
                                    ? "Your apps are here; start it to open them."
-                                   : "Needs JIT. StikJIT is built in — the recommended way.")
+                                   : "Needs JIT. StikJIT is built in — the recommended way."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                 }
             }
             Spacer(minLength: 6)
-            Button(started ? "Show" : JITBootstrap.isDebuggerAttached ? "Start" : "Enable JIT") {
+            Button(LocalizedStringKey(started ? "Show" : JITBootstrap.isDebuggerAttached ? "Start" : "Enable JIT")) {
                 if started { onOpenGuest() } else { onStartAndroid() }
             }
             .buttonStyle(.borderedProminent)
@@ -142,7 +142,7 @@ struct LibraryTab: View {
     private func busyStrip(_ text: String) -> some View {
         HStack(spacing: 12) {
             ProgressView()
-            Text(text).font(.subheadline).lineLimit(2)
+            Text(LocalizedStringKey(text)).font(.subheadline).lineLimit(2)
             Spacer(minLength: 0)
         }
         .padding(14)
@@ -152,7 +152,7 @@ struct LibraryTab: View {
     private var filterPicker: some View {
         Picker("Show", selection: $filter) {
             Text("All").tag("All")
-            ForEach(categories, id: \.self) { c in Text(plural(c)).tag(c) }
+            ForEach(categories, id: \.self) { c in Text(LocalizedStringKey(plural(c))).tag(c) }
         }
         .pickerStyle(.segmented)
     }

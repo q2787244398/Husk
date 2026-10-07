@@ -74,24 +74,24 @@ struct JITCard: View {
                     Image(systemName: "bolt.fill").font(.title3).foregroundStyle(Color.accentColor)
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(offered == .builtIn ? "StikJIT" : offered.title).font(.title3.weight(.semibold))
+                    Text(LocalizedStringKey(offered == .builtIn ? "StikJIT" : offered.title)).font(.title3.weight(.semibold))
                     Text("Turn on JIT").font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
             }
 
-            Text(explanation)
+            Text(LocalizedStringKey(explanation))
                 .font(.subheadline)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let why = HuskBuiltInJIT.unavailableReason {
-                Text(why).font(.footnote).foregroundStyle(.orange)
+                Text(LocalizedStringKey(why)).font(.footnote).foregroundStyle(.orange)
             }
 
             if jit.busy {
                 HStack(spacing: 10) {
                     ProgressView()
-                    Text(jit.status ?? "Turning on JIT…").font(.subheadline).foregroundStyle(.secondary)
+                    Text(LocalizedStringKey(jit.status ?? "Turning on JIT…")).font(.subheadline).foregroundStyle(.secondary)
                 }
             } else {
                 Button {
@@ -101,7 +101,7 @@ struct JITCard: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Label(buttonTitle, systemImage: "bolt.fill")
+                        Label(LocalizedStringKey(buttonTitle), systemImage: "bolt.fill")
                             .font(.headline)
                         Spacer()
                     }
