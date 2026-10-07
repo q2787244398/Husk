@@ -17,7 +17,8 @@
 #
 # The IPA is unsigned on purpose, as package_ipa.sh explains: AltStore,
 # SideStore and TrollStore re-sign at install. It is attached to the run as an
-# artifact.
+# artifact, and also published to Releases under a single rolling `latest` tag
+# so it can be downloaded without digging through a run.
 name: Build IPA
 
 on:
@@ -66,6 +67,10 @@ jobs:
     name: Husk.ipa
     runs-on: ${{ inputs.runner || 'macos-26' }}
     timeout-minutes: 330
+    # Writing is only for the release below. A pull request gets a read-only
+    # token whatever this says, so the step is skipped for one anyway.
+    permissions:
+      contents: write
     env:
       HOMEBREW_NO_AUTO_UPDATE: "1"
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
@@ -295,6 +300,33 @@ jobs:
           path: ${{ runner.temp }}/Husk.ipa
           if-no-files-found: error
           retention-days: 30
+
+      # One rolling `latest` release rather than a release per build, so the
+      # newest IPA has a stable URL
+      # (…/releases/latest/download/Husk.ipa) and does not expire with the
+      # artifact's 30 days. It is recreated each build so the tag, the notes and
+      # the asset all describe the same commit. A pull request is skipped: its
+      # token is read-only, and a PR must not publish.
+      - name: Publish to Releases
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG=latest
+          NOTES="简体中文界面的 Husk，随 main 分支与每夜的上游同步自动构建。
+          提交：$GITHUB_SHA
+          构建：$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          日期：$(date -u '+%Y-%m-%d %H:%M UTC')
+
+          安装包未签名，请用 TrollStore、AltStore 或 SideStore 安装，它们会在安装时用你自己的证书重新签名。"
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "Husk 中文版（最新构建）" \
+            --notes "$NOTES" \
+            "$RUNNER_TEMP/Husk.ipa"
+          gh release view "$TAG" --json url,assets | python3 -m json.tool
 
       - name: Upload build logs
         if: failure()
