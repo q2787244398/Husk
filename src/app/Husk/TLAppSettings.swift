@@ -172,8 +172,7 @@ struct TLAppSettingsView: View {
                 Text("Display")
             } footer: {
                 Text(LocalizedStringKey(settings.resolution.detail))
-                + Text(" ")
-                + Text("Orientation and resolution apply the next time the game starts, and a game already running in this session needs Husk closed and opened again.")
+                Text("Orientation and resolution apply the next time the game starts, and a game already running in this session needs Husk closed and opened again.")
             }
 
             Section {

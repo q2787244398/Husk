@@ -330,10 +330,10 @@ struct StatusPill: View {
 
 /// What a screen shows when it has nothing to show.
 struct EmptyState: View {
-    let title: LocalizedStringKey
-    let message: LocalizedStringKey
+    let title: String
+    let message: String
     let systemImage: String
-    var actionTitle: LocalizedStringKey? = nil
+    var actionTitle: String? = nil
     var action: (() -> Void)? = nil
 
     var body: some View {
@@ -343,17 +343,17 @@ struct EmptyState: View {
                 .foregroundStyle(Theme.accent)
                 .frame(width: 64, height: 64)
                 .background(Theme.accentSoft, in: Circle())
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(Theme.text)
-            Text(message)
+            Text(LocalizedStringKey(message))
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.textDim)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 28)
             if let actionTitle, let action {
                 Button(action: action) {
-                    Text(actionTitle)
+                    Text(LocalizedStringKey(actionTitle))
                 }
                     .buttonStyle(PrimaryButtonStyle())
                     .padding(.horizontal, 44)

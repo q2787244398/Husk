@@ -60,7 +60,7 @@ struct DirectoryView: View {
             if loading && entries.isEmpty {
                 ProgressView()
             } else if let failure {
-                EmptyState(title: "Cannot Read This Folder", message: LocalizedStringKey(failure),
+                EmptyState(title: "Cannot Read This Folder", message: failure,
                            systemImage: "lock")
             } else if entries.isEmpty {
                 EmptyState(title: "Empty", message: "Nothing is in this folder yet.",

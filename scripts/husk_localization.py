@@ -36,6 +36,21 @@ BF = {"Localizable.strings": "A1B2C3D4E5F60718293A4B07",
 
 MARKER = VG["Localizable.strings"]
 
+# The variant groups live inside the "Husk" PBXGroup, the one whose path is
+# `Husk`. That membership matters for the build, not just the navigator: a
+# variant group with sourceTree `<group>` has its children's paths resolved
+# against the enclosing group, and a group that belongs to no group at all is
+# resolved against the project directory -- so `zh-Hans.lproj/...` would be
+# looked for at src/app/zh-Hans.lproj/... and the build would fail with
+# "Build input file cannot be found".
+HUSK_GROUP = "0F8D2787A26076A289B9B8EA"
+HUSK_GROUP_ANCHOR = "\t\t\t\tFA84FD81F71FF2ACDEB879A5 /* Resources */,\n"
+HUSK_GROUP_CHILDREN = "".join(
+    f"\t\t\t\t{VG[name]} /* {name} */,\n"
+    for name in ("Localizable.strings", "InfoPlist.strings")
+)
+HUSK_GROUP_MARK = f"\t\t\t\t{VG['Localizable.strings']} /* Localizable.strings */,\n"
+
 
 def die(msg):
     print(f"error: {msg}", file=sys.stderr)
@@ -62,14 +77,24 @@ def main():
     text = PBX.read_text(encoding="utf-8")
 
     if MARKER in text:
-        # Already wired in. Still make sure the region is known, because a
-        # merge can leave the file references behind while dropping the region.
+        # Already wired in. Still make sure both things a merge can quietly drop
+        # are present: the known region (a regenerated project lists only the
+        # languages it knows) and the variant groups' membership in the Husk
+        # group, without which their paths resolve to the wrong directory.
+        changed = False
         if "zh-Hans" not in text.split("knownRegions = (", 1)[1].split(");", 1)[0]:
             text = text.replace("knownRegions = (\n\t\t\t\tBase,\n\t\t\t\ten,\n",
                                 "knownRegions = (\n\t\t\t\tBase,\n\t\t\t\ten,\n\t\t\t\t\"zh-Hans\",\n", 1)
-            PBX.write_text(text, encoding="utf-8")
+            changed = True
             print("knownRegions: added zh-Hans")
-        print("localization already present in project.pbxproj")
+        if HUSK_GROUP_MARK not in text:
+            text = insert_before(text, HUSK_GROUP_ANCHOR, HUSK_GROUP_CHILDREN, "Husk group")
+            changed = True
+            print("Husk group: added the localization variant groups")
+        if changed:
+            PBX.write_text(text, encoding="utf-8")
+        else:
+            print("localization already present in project.pbxproj")
         return
 
     # 1. File references, one per (language, file). `name` is the language and
@@ -137,6 +162,10 @@ def main():
     if kr_anchor not in text:
         die("could not find knownRegions")
     text = text.replace(kr_anchor, kr_anchor + '\t\t\t\t"zh-Hans",\n', 1)
+
+    # 5. Put the variant groups inside the Husk group so their paths resolve to
+    #    src/app/Husk/... rather than src/app/... (see HUSK_GROUP_ANCHOR).
+    text = insert_before(text, HUSK_GROUP_ANCHOR, HUSK_GROUP_CHILDREN, "Husk group")
 
     PBX.write_text(text, encoding="utf-8")
     print("localization wired into project.pbxproj")

@@ -408,6 +408,8 @@
 				211CC4F06EC722E5972D7F3B /* TLUnityView.swift */,
 				4BD6ABD20471B2CACF60ABD4 /* TranslationLayer.swift */,
 				0F570EB6EAB321272B32955C /* VirtualPad.swift */,
+				A1B2C3D4E5F60718293A4B05 /* Localizable.strings */,
+				A1B2C3D4E5F60718293A4B06 /* InfoPlist.strings */,
 				FA84FD81F71FF2ACDEB879A5 /* Resources */,
 			);
 			path = Husk;
