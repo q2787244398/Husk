@@ -36,12 +36,16 @@ if ! command -v aarch64-linux-gnu-gcc >/dev/null || ! command -v qemu-aarch64 >/
     exit 0
 fi
 # The checks do not touch ZIP files, so the scanner's zlib is stubbed out
-# rather than cross-built.
+# rather than cross-built. The StikDebug lookup the aarch64-only probe makes
+# lives in husk-tl-load.c, which is not part of these checks: on a Linux host
+# there is no debugger-granted region and no husk_ios_jit symbols to resolve,
+# so it answers exactly what it would answer there.
 cat > "$OUT/noscan.c" <<'EOF'
 #include <stddef.h>
 char *husk_tl_scan(const char *const *p, int n) { (void)p; (void)n; return NULL; }
 void *husk_tl_read_entry(const char *a, const char *b, size_t l, size_t *o)
 { (void)a; (void)b; (void)l; *o = 0; return NULL; }
+void *tl_find_stikdebug_prewarmed(void) { return NULL; }
 EOF
 aarch64-linux-gnu-gcc $CFLAGS -static -o "$OUT/checks_arm64" "$HERE/scan_cli.c" \
     "$OUT/noscan.c" "$SRC"/husk-tl-json.c "$SRC"/husk-tl-probe.c \
